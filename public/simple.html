@@ -60,6 +60,15 @@
         </div>
       </section>
 
+      <div class="palette-row">
+        <span class="muted">Palettes</span>
+        <div class="palette-buttons">
+          <button class="palette-btn" data-theme="theme-emerald">Emerald</button>
+          <button class="palette-btn" data-theme="theme-royal">Royal</button>
+          <button class="palette-btn" data-theme="theme-sunset">Sunset</button>
+        </div>
+      </div>
+
       <div class="controls-row card">
         <div class="control">
           <label>Region (country code)</label>
@@ -75,11 +84,70 @@
         </div>
       </div>
 
-    <section class="card">
-      <div class="section-head">
-        <h3>Top Videos</h3>
-        <div class="hint">ranked by views/hour + small-channel boost</div>
+      <div class="card">
+        <div class="section-head">
+          <h3>Search by keyword</h3>
+          <div class="hint">pulls search results, ranks by views/hour</div>
+        </div>
+        <div class="controls-grid">
+          <div class="control">
+            <label>Niche / Category</label>
+            <select id="category"></select>
+          </div>
+          <div class="control">
+            <label>Timeframe</label>
+            <select id="timeframe">
+              <option value="1">Last 24 hours</option>
+              <option value="7" selected>This week (7d)</option>
+              <option value="14">Last 2 weeks</option>
+              <option value="30">Last month (30d)</option>
+              <option value="1000000">All time</option>
+            </select>
+          </div>
+          <div class="control">
+            <label>Region</label>
+            <input id="searchRegion" value="US" />
+          </div>
+          <div class="control">
+            <label>Query</label>
+            <input id="query" placeholder="e.g., ai podcast" />
+          </div>
+          <div class="control">
+            <label>Max results</label>
+            <input id="qmax" type="number" value="25" min="1" max="50" />
+          </div>
+        </div>
+        <div class="actions-row">
+          <button id="searchBtn">Search</button>
+        </div>
       </div>
+
+      <section class="card">
+        <div class="section-head">
+          <h3>Search Results (ranked by views/hour)</h3>
+          <div class="hint">cards show VPH, views, publish date, quick actions</div>
+        </div>
+        <div id="searchGrid" class="card-grid"></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h3>Niche Outliers (by category + timeframe)</h3>
+          <div class="hint">filters above control category and window</div>
+        </div>
+        <table id="catTable">
+          <thead>
+            <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Age (h)</th><th>Actions</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h3>Top Videos</h3>
+          <div class="hint">ranked by views/hour + small-channel boost</div>
+        </div>
       <table id="vidTable">
         <thead>
           <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Score</th></tr>
@@ -96,65 +164,6 @@
       <table id="chanTable">
         <thead>
           <tr><th>Channel</th><th>Videos</th><th>Score</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <div class="card">
-      <div class="section-head">
-        <h3>Search by keyword</h3>
-        <div class="hint">pulls search results, ranks by views/hour</div>
-      </div>
-      <div class="controls-grid">
-        <div class="control">
-          <label>Niche / Category</label>
-          <select id="category"></select>
-        </div>
-        <div class="control">
-          <label>Timeframe</label>
-          <select id="timeframe">
-            <option value="1">Last 24 hours</option>
-            <option value="7" selected>This week (7d)</option>
-            <option value="14">Last 2 weeks</option>
-            <option value="30">Last month (30d)</option>
-            <option value="1000000">All time</option>
-          </select>
-        </div>
-        <div class="control">
-          <label>Region</label>
-          <input id="searchRegion" value="US" />
-        </div>
-        <div class="control">
-          <label>Query</label>
-          <input id="query" placeholder="e.g., ai podcast" />
-        </div>
-        <div class="control">
-          <label>Max results</label>
-          <input id="qmax" type="number" value="25" min="1" max="50" />
-        </div>
-      </div>
-      <div class="actions-row">
-        <button id="searchBtn">Search</button>
-      </div>
-    </div>
-
-    <section class="card">
-      <div class="section-head">
-        <h3>Search Results (ranked by views/hour)</h3>
-        <div class="hint">cards show VPH, views, publish date, quick actions</div>
-      </div>
-      <div id="searchGrid" class="card-grid"></div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <h3>Niche Outliers (by category + timeframe)</h3>
-        <div class="hint">filters above control category and window</div>
-      </div>
-      <table id="catTable">
-        <thead>
-          <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Age (h)</th><th>Actions</th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -328,6 +337,12 @@
     document.getElementById('searchBtn').onclick = doSearch;
     document.getElementById('category').onchange = fetchCategory;
     document.getElementById('timeframe').onchange = fetchCategory;
+    document.querySelectorAll('.palette-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.documentElement.classList.remove('theme-emerald', 'theme-royal', 'theme-sunset');
+        document.documentElement.classList.add(btn.dataset.theme);
+      };
+    });
     populateCategories();
     fetchOutliers();
     fetchCategory();
