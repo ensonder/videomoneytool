@@ -4,6 +4,7 @@
 //      ELEVEN_API_KEY (tts), HUGGINGFACE_API_KEY (tts), KOKORO_URL (optional HTTP tts endpoint)
 // Start: node index.js
 
+require("dotenv").config();
 const express = require("express");
 const { OpenAI } = require("openai");
 const cosine = require("cosine-similarity");
