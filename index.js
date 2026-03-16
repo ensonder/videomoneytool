@@ -9,7 +9,7 @@ const express = require("express");
 const { OpenAI } = require("openai");
 const cosine = require("cosine-similarity");
 const { v4: uuid } = require("uuid");
-const { YoutubeTranscript } = require("youtube-transcript");
+// youtube-transcript is ESM-only; load lazily via dynamic import inside fetchTranscript
 const NodeCache = require("node-cache");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -89,6 +89,7 @@ async function fetchRecentVideos(channelId, days = 7, max = 25) {
 }
 async function fetchTranscript(ytId, lang = "en") {
   try {
+    const { YoutubeTranscript } = await import("youtube-transcript");
     const transcript = await YoutubeTranscript.fetchTranscript(ytId, { lang, country: "US" });
     return transcript.map(t => t.text).join(" ");
   } catch {
