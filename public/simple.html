@@ -17,6 +17,14 @@
       <input id="max" type="number" value="25" min="1" max="50" />
       <button id="go">Fetch</button>
     </div>
+    <div class="card">
+      <h3>Search by keyword</h3>
+      <label>Query</label>
+      <input id="query" placeholder="e.g., ai podcast" />
+      <label>Max results (<=50)</label>
+      <input id="qmax" type="number" value="25" min="1" max="50" />
+      <button id="searchBtn">Search</button>
+    </div>
     <section class="card">
       <h3>Top Videos</h3>
       <table id="vidTable">
@@ -31,6 +39,15 @@
       <table id="chanTable">
         <thead>
           <tr><th>Channel</th><th>Videos</th><th>Score</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <section class="card">
+      <h3>Search Results (ranked by views/hour)</h3>
+      <table id="searchTable">
+        <thead>
+          <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -72,7 +89,32 @@
         cbody.appendChild(tr);
       });
     }
+    async function doSearch() {
+      const q = document.getElementById('query').value;
+      const max = document.getElementById('qmax').value || 25;
+      const err = document.getElementById('error');
+      err.textContent = '';
+      if (!q.trim()) { err.textContent = 'Enter a query'; return; }
+      try {
+        const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}`);
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const body = document.querySelector('#searchTable tbody');
+        body.innerHTML = '';
+        data.videos.slice(0, 25).forEach(v => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td><a href="${v.url}" target="_blank">${v.title}</a></td>
+                          <td>${v.channelTitle}</td>
+                          <td>${v.views.toLocaleString()}</td>
+                          <td>${v.vph.toFixed(0)}</td>`;
+          body.appendChild(tr);
+        });
+      } catch (e) {
+        err.textContent = e.message;
+      }
+    }
     document.getElementById('go').onclick = fetchOutliers;
+    document.getElementById('searchBtn').onclick = doSearch;
     fetchOutliers();
   </script>
 </body>

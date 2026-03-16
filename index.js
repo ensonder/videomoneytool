@@ -148,6 +148,42 @@ async function fetchTrendingOutliers(regionCode = "US", maxResults = 25) {
 
   return { videos: topVideos, channels: topChannels };
 }
+
+// Search videos by query, rank by views/hour
+async function searchVideos(query, maxResults = 25) {
+  if (!process.env.YT_API_KEY) throw new Error("YT_API_KEY not set");
+  const search = await ytFetch("search", {
+    part: "id,snippet",
+    q: query,
+    type: "video",
+    maxResults: Math.min(maxResults, 50),
+    order: "date"
+  });
+  const ids = (search.items || []).map(i => i.id.videoId).filter(Boolean);
+  if (!ids.length) return [];
+  const details = await ytFetch("videos", {
+    part: "snippet,statistics",
+    id: ids.join(",")
+  });
+  const now = Date.now();
+  return (details.items || []).map(v => {
+    const views = Number(v.statistics.viewCount || 0);
+    const publishedAt = v.snippet.publishedAt;
+    const ageHours = Math.max((now - new Date(publishedAt).getTime()) / 3.6e6, 0.01);
+    const vph = views / ageHours;
+    return {
+      id: v.id,
+      title: v.snippet.title,
+      channelTitle: v.snippet.channelTitle,
+      channelId: v.snippet.channelId,
+      views,
+      vph,
+      ageHours,
+      publishedAt,
+      url: `https://www.youtube.com/watch?v=${v.id}`
+    };
+  }).sort((a, b) => b.vph - a.vph);
+}
 async function fetchTranscript(ytId, lang = "en") {
   try {
     const { YoutubeTranscript } = await import("youtube-transcript");
@@ -450,6 +486,18 @@ app.get("/api/simple/outliers", async (req, res) => {
   try {
     const data = await fetchTrendingOutliers(region, maxResults);
     res.json(data);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get("/api/simple/search", async (req, res) => {
+  const q = req.query.q || "";
+  const maxResults = Number(req.query.max || 25);
+  if (!q.trim()) return res.status(400).json({ error: "q is required" });
+  try {
+    const data = await searchVideos(q, maxResults);
+    res.json({ query: q, videos: data });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
