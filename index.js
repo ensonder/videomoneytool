@@ -225,7 +225,7 @@ async function fetchTranscript(ytId, lang = "en") {
     const { YoutubeTranscript } = await import("youtube-transcript");
     const transcript = await YoutubeTranscript.fetchTranscript(ytId, { lang, country: "US" });
     return transcript.map(t => t.text).join(" ");
-  } catch {
+  } catch (e) {
     return "";
   }
 }
@@ -558,8 +558,12 @@ app.get("/api/simple/transcript", async (req, res) => {
   if (!ytId) return res.status(400).json({ error: "id is required" });
   try {
     const text = await fetchTranscript(ytId, lang);
+    if (!text) {
+      res.status(404).json({ error: "Transcript not available" });
+      return;
+    }
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.send(text || "");
+    res.send(text);
   } catch (e) {
     res.status(400).json({ error: e.message });
   }

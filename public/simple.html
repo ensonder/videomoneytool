@@ -27,6 +27,7 @@
         <option value="7" selected>This week (7d)</option>
         <option value="14">Last 2 weeks</option>
         <option value="30">Last month (30d)</option>
+        <option value="1000000">All time</option>
       </select>
       <label>Query</label>
       <input id="query" placeholder="e.g., ai podcast" />
@@ -195,6 +196,7 @@
     async function downloadTranscript(id, titleEnc) {
       try {
         const res = await fetch(`/api/simple/transcript?id=${id}`);
+        if (!res.ok) throw new Error("Transcript not available");
         const text = await res.text();
         const blob = new Blob([text], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
