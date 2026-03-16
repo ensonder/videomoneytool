@@ -8,17 +8,38 @@
 </head>
 <body>
   <main class="page">
-    <h1>Simple YouTube Outlier Finder</h1>
-    <p class="tagline">Uses YouTube Data API "mostPopular" feed, ranks by views/hour with a small-channel boost.</p>
-    <div class="card">
-      <label>Region code (e.g., US, GB, IN, DE)</label>
-      <input id="region" value="US" />
-      <label>Max results (<=50)</label>
-      <input id="max" type="number" value="25" min="1" max="50" />
-      <button id="go">Fetch</button>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">YouTube Growth System</p>
+        <h1>Tube Money Outliers</h1>
+        <p class="tagline">Live YouTube data, ranked by velocity and small-channel boost.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="pill-btn" id="go">Refresh Outliers</button>
+        <span class="dot-badge">LIVE</span>
+      </div>
+    </header>
+
+    <div class="controls-row card">
+      <div class="control">
+        <label>Region (country code)</label>
+        <input id="region" value="US" />
+      </div>
+      <div class="control">
+        <label>Max results</label>
+        <input id="max" type="number" value="25" min="1" max="50" />
+      </div>
+      <div class="control">
+        <label>Status</label>
+        <div class="status-chip">API ready</div>
+      </div>
     </div>
+
     <section class="card">
-      <h3>Top Videos</h3>
+      <div class="section-head">
+        <h3>Top Videos</h3>
+        <div class="hint">ranked by views/hour + small-channel boost</div>
+      </div>
       <table id="vidTable">
         <thead>
           <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Score</th></tr>
@@ -26,8 +47,12 @@
         <tbody></tbody>
       </table>
     </section>
+
     <section class="card">
-      <h3>Top Channels (by aggregate score)</h3>
+      <div class="section-head">
+        <h3>Top Channels</h3>
+        <div class="hint">aggregate score across their trending uploads</div>
+      </div>
       <table id="chanTable">
         <thead>
           <tr><th>Channel</th><th>Videos</th><th>Score</th></tr>
@@ -35,32 +60,58 @@
         <tbody></tbody>
       </table>
     </section>
+
+    <div class="card">
+      <div class="section-head">
+        <h3>Search by keyword</h3>
+        <div class="hint">pulls search results, ranks by views/hour</div>
+      </div>
+      <div class="controls-grid">
+        <div class="control">
+          <label>Niche / Category</label>
+          <select id="category"></select>
+        </div>
+        <div class="control">
+          <label>Timeframe</label>
+          <select id="timeframe">
+            <option value="1">Last 24 hours</option>
+            <option value="7" selected>This week (7d)</option>
+            <option value="14">Last 2 weeks</option>
+            <option value="30">Last month (30d)</option>
+            <option value="1000000">All time</option>
+          </select>
+        </div>
+        <div class="control">
+          <label>Region</label>
+          <input id="searchRegion" value="US" />
+        </div>
+        <div class="control">
+          <label>Query</label>
+          <input id="query" placeholder="e.g., ai podcast" />
+        </div>
+        <div class="control">
+          <label>Max results</label>
+          <input id="qmax" type="number" value="25" min="1" max="50" />
+        </div>
+      </div>
+      <div class="actions-row">
+        <button id="searchBtn">Search</button>
+      </div>
+    </div>
+
     <section class="card">
-      <h3>Search Results (ranked by views/hour)</h3>
+      <div class="section-head">
+        <h3>Search Results (ranked by views/hour)</h3>
+        <div class="hint">cards show VPH, views, publish date, quick actions</div>
+      </div>
       <div id="searchGrid" class="card-grid"></div>
     </section>
-    <div class="card">
-      <h3>Search by keyword</h3>
-      <label>Niche / Category</label>
-      <select id="category"></select>
-      <label>Timeframe</label>
-      <select id="timeframe">
-        <option value="1">Last 24 hours</option>
-        <option value="7" selected>This week (7d)</option>
-        <option value="14">Last 2 weeks</option>
-        <option value="30">Last month (30d)</option>
-        <option value="1000000">All time</option>
-      </select>
-      <label>Region (country code, e.g., US, IN, DE)</label>
-      <input id="searchRegion" value="US" />
-      <label>Query</label>
-      <input id="query" placeholder="e.g., ai podcast" />
-      <label>Max results (<=50)</label>
-      <input id="qmax" type="number" value="25" min="1" max="50" />
-      <button id="searchBtn">Search</button>
-    </div>
+
     <section class="card">
-      <h3>Niche Outliers (by category + timeframe)</h3>
+      <div class="section-head">
+        <h3>Niche Outliers (by category + timeframe)</h3>
+        <div class="hint">filters above control category and window</div>
+      </div>
       <table id="catTable">
         <thead>
           <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Age (h)</th><th>Actions</th></tr>
@@ -164,7 +215,7 @@
           <div class="card-body">
             <a class="title" href="${v.url}" target="_blank">${v.title}</a>
             <div class="meta">${v.channelTitle}</div>
-            <div class="meta">${days < 1 ? v.ageHours.toFixed(1) + 'h ago' : days.toFixed(1) + 'd ago'} • ${new Date(v.publishedAt).toLocaleDateString()}</div>
+            <div class="meta">${days < 1 ? v.ageHours.toFixed(1) + 'h ago' : days.toFixed(1) + 'd ago'} | ${new Date(v.publishedAt).toLocaleDateString()}</div>
             <div class="actions">
               <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
               <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
