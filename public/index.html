@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VideoMoneyTool • Creator AI Platform</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <header>
+      <h1>VideoMoneyTool</h1>
+      <p class="tagline">Trend discovery, outlier surfacing, scripts, TTS, images — all in one API.</p>
+    </header>
+
+    <section class="card">
+      <h2>Quick Start</h2>
+      <ol>
+        <li>Set env vars in Vercel: <code>YT_API_KEY</code>, <code>GEMINI_API_KEY</code>, <code>OPENAI_API_KEY</code> (optional), <code>ELEVEN_API_KEY</code>, <code>HUGGINGFACE_API_KEY</code>, <code>KOKORO_URL</code> (optional).</li>
+        <li>Use the forms below or call REST endpoints directly.</li>
+      </ol>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Ingest Channel</h3>
+        <label>Channel ID (e.g. UC-lHJZR3Gqxm24_Vd_AJ5Yw)</label>
+        <input id="channelId" placeholder="YouTube Channel ID" />
+        <label>Days window</label>
+        <input id="days" type="number" value="7" min="1" max="30" />
+        <button id="ingestBtn">Ingest & Cluster</button>
+        <pre id="ingestResult"></pre>
+      </div>
+
+      <div class="card">
+        <h3>Outliers</h3>
+        <button id="outliersBtn">Fetch Outliers</button>
+        <pre id="outliersResult"></pre>
+      </div>
+
+      <div class="card">
+        <h3>Niches</h3>
+        <button id="nichesBtn">Fetch Niches</button>
+        <pre id="nichesResult"></pre>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Generate Titles</h3>
+      <input id="titleNiche" placeholder="Niche (e.g. AI side hustles)" />
+      <button id="titlesBtn">Generate</button>
+      <pre id="titlesResult"></pre>
+    </section>
+
+    <section class="card">
+      <h3>Endpoints</h3>
+      <ul>
+        <li><code>POST /api/ingest/channel</code> <small>{ channelId, days }</small></li>
+        <li><code>GET /api/niches</code></li>
+        <li><code>GET /api/outliers?min_score=5</code></li>
+        <li><code>POST /api/titles/generate</code></li>
+        <li><code>POST /api/scripts/generate</code></li>
+        <li><code>POST /api/voice/synthesize</code></li>
+        <li><code>POST /api/images/queue</code> + <code>GET /api/images/status?id=</code></li>
+      </ul>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
