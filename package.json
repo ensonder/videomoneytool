@@ -1,0 +1,22 @@
+{
+  "name": "videomoneytool",
+  "version": "1.0.0",
+  "description": "YouTube Creator AI Platform (Express) with YT Data API, transcripts, TTS, Gemini images",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.11.4",
+    "cosine-similarity": "^1.0.0",
+    "express": "^4.19.2",
+    "node-cache": "^5.1.2",
+    "openai": "^4.47.1",
+    "uuid": "^9.0.1",
+    "youtube-transcript": "^1.0.6"
+  }
+}

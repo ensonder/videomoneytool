@@ -381,4 +381,9 @@ app.get("/v1/transcript/:ytId", async (req, res) => {
 
 // ---- Server ----
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Creator AI API running on :${port}`));
+// When required (e.g., Vercel serverless), just export the Express app.
+if (require.main === module) {
+  app.listen(port, () => console.log(`Creator AI API running on :${port}`));
+}
+
+module.exports = app;
