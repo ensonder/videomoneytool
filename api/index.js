@@ -1,3 +1,6 @@
-// Vercel serverless entrypoint: reuse the Express app without starting a local listener.
+// Vercel serverless entrypoint: wrap the Express app as a handler.
 const app = require("../index");
-module.exports = app;
+
+module.exports = (req, res) => {
+  return app(req, res);
+};
