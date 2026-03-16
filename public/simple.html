@@ -19,6 +19,15 @@
     </div>
     <div class="card">
       <h3>Search by keyword</h3>
+      <label>Niche / Category</label>
+      <select id="category"></select>
+      <label>Timeframe</label>
+      <select id="timeframe">
+        <option value="1">Last 24 hours</option>
+        <option value="7" selected>This week (7d)</option>
+        <option value="14">Last 2 weeks</option>
+        <option value="30">Last month (30d)</option>
+      </select>
       <label>Query</label>
       <input id="query" placeholder="e.g., ai podcast" />
       <label>Max results (<=50)</label>
@@ -47,7 +56,16 @@
       <h3>Search Results (ranked by views/hour)</h3>
       <table id="searchTable">
         <thead>
-          <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th></tr>
+          <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Actions</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <section class="card">
+      <h3>Niche Outliers (by category + timeframe)</h3>
+      <table id="catTable">
+        <thead>
+          <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Age (h)</th><th>Actions</th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -55,6 +73,33 @@
     <pre id="error"></pre>
   </main>
   <script>
+    const categories = [
+      { id: "0", name: "All categories" },
+      { id: "1", name: "Film & Animation" },
+      { id: "2", name: "Autos & Vehicles" },
+      { id: "10", name: "Music" },
+      { id: "17", name: "Sports" },
+      { id: "19", name: "Travel & Events" },
+      { id: "20", name: "Gaming" },
+      { id: "22", name: "People & Blogs" },
+      { id: "23", name: "Comedy" },
+      { id: "24", name: "Entertainment" },
+      { id: "25", name: "News & Politics" },
+      { id: "26", name: "Howto & Style" },
+      { id: "27", name: "Education" },
+      { id: "28", name: "Science & Technology" }
+    ];
+
+    function populateCategories() {
+      const sel = document.getElementById('category');
+      categories.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        sel.appendChild(opt);
+      });
+    }
+
     async function fetchOutliers() {
       const region = document.getElementById('region').value || 'US';
       const max = document.getElementById('max').value || 25;
@@ -82,13 +127,13 @@
         body.appendChild(tr);
       });
       const cbody = document.querySelector('#chanTable tbody');
-      cbody.innerHTML = '';
-      data.channels.slice(0, 15).forEach(c => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${c.channelTitle}</td><td>${c.videos}</td><td>${c.score.toFixed(0)}</td>`;
-        cbody.appendChild(tr);
-      });
-    }
+        cbody.innerHTML = '';
+        data.channels.slice(0, 15).forEach(c => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${c.channelTitle}</td><td>${c.videos}</td><td>${c.score.toFixed(0)}</td>`;
+          cbody.appendChild(tr);
+        });
+      }
     async function doSearch() {
       const q = document.getElementById('query').value;
       const max = document.getElementById('qmax').value || 25;
@@ -106,16 +151,77 @@
           tr.innerHTML = `<td><a href="${v.url}" target="_blank">${v.title}</a></td>
                           <td>${v.channelTitle}</td>
                           <td>${v.views.toLocaleString()}</td>
-                          <td>${v.vph.toFixed(0)}</td>`;
+                          <td>${v.vph.toFixed(0)}</td>
+                          <td>
+                            <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
+                            <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
+                          </td>`;
           body.appendChild(tr);
         });
       } catch (e) {
         err.textContent = e.message;
       }
     }
+    async function fetchCategory() {
+      const categoryId = document.getElementById('category').value;
+      const days = document.getElementById('timeframe').value;
+      const region = document.getElementById('region').value || 'US';
+      const err = document.getElementById('error');
+      err.textContent = '';
+      try {
+        const res = await fetch(`/api/simple/category?categoryId=${categoryId}&days=${days}&region=${region}&max=50`);
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const body = document.querySelector('#catTable tbody');
+        body.innerHTML = '';
+        data.videos.slice(0, 50).forEach(v => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td><a href="${v.url}" target="_blank">${v.title}</a></td>
+                          <td>${v.channelTitle}</td>
+                          <td>${v.views.toLocaleString()}</td>
+                          <td>${v.vph.toFixed(0)}</td>
+                          <td>${v.ageHours.toFixed(1)}</td>
+                          <td>
+                            <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
+                            <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
+                          </td>`;
+          body.appendChild(tr);
+        });
+      } catch (e) {
+        err.textContent = e.message;
+      }
+    }
+
+    async function downloadTranscript(id, titleEnc) {
+      try {
+        const res = await fetch(`/api/simple/transcript?id=${id}`);
+        const text = await res.text();
+        const blob = new Blob([text], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${decodeURIComponent(titleEnc || id)}-transcript.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert("Transcript not available");
+      }
+    }
+    function downloadThumb(id, titleEnc) {
+      const url = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${decodeURIComponent(titleEnc || id)}-thumb.jpg`;
+      a.click();
+    }
+
     document.getElementById('go').onclick = fetchOutliers;
     document.getElementById('searchBtn').onclick = doSearch;
+    document.getElementById('category').onchange = fetchCategory;
+    document.getElementById('timeframe').onchange = fetchCategory;
+    populateCategories();
     fetchOutliers();
+    fetchCategory();
   </script>
 </body>
 </html>

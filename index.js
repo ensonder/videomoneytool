@@ -184,6 +184,42 @@ async function searchVideos(query, maxResults = 25) {
     };
   }).sort((a, b) => b.vph - a.vph);
 }
+
+// Category-based outliers with timeframe filter
+async function fetchCategoryOutliers({ regionCode = "US", categoryId = "0", days = 7, maxResults = 50 }) {
+  if (!process.env.YT_API_KEY) throw new Error("YT_API_KEY not set");
+  const popular = await ytFetch("videos", {
+    chart: "mostPopular",
+    part: "id,snippet,statistics",
+    maxResults: Math.min(maxResults, 50),
+    regionCode,
+    ...(categoryId !== "0" ? { videoCategoryId: categoryId } : {})
+  });
+  const now = Date.now();
+  const items = (popular.items || []).map(v => {
+    const views = Number(v.statistics.viewCount || 0);
+    const publishedAt = v.snippet.publishedAt;
+    const ageHours = Math.max((now - new Date(publishedAt).getTime()) / 3.6e6, 0.01);
+    const vph = views / ageHours;
+    return {
+      id: v.id,
+      title: v.snippet.title,
+      channelTitle: v.snippet.channelTitle,
+      channelId: v.snippet.channelId,
+      views,
+      vph,
+      ageHours,
+      publishedAt,
+      url: `https://www.youtube.com/watch?v=${v.id}`
+    };
+  }).filter(v => v.ageHours <= days * 24);
+  const scored = items.map(v => {
+    const smallBoost = clamp((100000 - (v.subs || 0)) / 100000, 0, 1) * 0.3;
+    const score = v.vph * (1 + smallBoost);
+    return { ...v, score };
+  }).sort((a, b) => b.score - a.score);
+  return scored;
+}
 async function fetchTranscript(ytId, lang = "en") {
   try {
     const { YoutubeTranscript } = await import("youtube-transcript");
@@ -498,6 +534,32 @@ app.get("/api/simple/search", async (req, res) => {
   try {
     const data = await searchVideos(q, maxResults);
     res.json({ query: q, videos: data });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get("/api/simple/category", async (req, res) => {
+  const region = req.query.region || "US";
+  const categoryId = req.query.categoryId || "0";
+  const days = Number(req.query.days || 7);
+  const maxResults = Number(req.query.max || 50);
+  try {
+    const data = await fetchCategoryOutliers({ regionCode: region, categoryId, days, maxResults });
+    res.json({ region, categoryId, days, videos: data });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get("/api/simple/transcript", async (req, res) => {
+  const ytId = req.query.id;
+  const lang = req.query.lang || "en";
+  if (!ytId) return res.status(400).json({ error: "id is required" });
+  try {
+    const text = await fetchTranscript(ytId, lang);
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.send(text || "");
   } catch (e) {
     res.status(400).json({ error: e.message });
   }

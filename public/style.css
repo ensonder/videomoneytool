@@ -53,6 +53,11 @@ button {
   cursor: pointer;
 }
 button:hover { opacity: 0.92; }
+.mini {
+  margin: 2px 4px 0 0;
+  padding: 6px 8px;
+  font-size: 12px;
+}
 pre {
   background: rgba(0,0,0,0.35);
   border-radius: 10px;
