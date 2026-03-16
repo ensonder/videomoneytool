@@ -17,24 +17,6 @@
       <input id="max" type="number" value="25" min="1" max="50" />
       <button id="go">Fetch</button>
     </div>
-    <div class="card">
-      <h3>Search by keyword</h3>
-      <label>Niche / Category</label>
-      <select id="category"></select>
-      <label>Timeframe</label>
-      <select id="timeframe">
-        <option value="1">Last 24 hours</option>
-        <option value="7" selected>This week (7d)</option>
-        <option value="14">Last 2 weeks</option>
-        <option value="30">Last month (30d)</option>
-        <option value="1000000">All time</option>
-      </select>
-      <label>Query</label>
-      <input id="query" placeholder="e.g., ai podcast" />
-      <label>Max results (<=50)</label>
-      <input id="qmax" type="number" value="25" min="1" max="50" />
-      <button id="searchBtn">Search</button>
-    </div>
     <section class="card">
       <h3>Top Videos</h3>
       <table id="vidTable">
@@ -57,6 +39,26 @@
       <h3>Search Results (ranked by views/hour)</h3>
       <div id="searchGrid" class="card-grid"></div>
     </section>
+    <div class="card">
+      <h3>Search by keyword</h3>
+      <label>Niche / Category</label>
+      <select id="category"></select>
+      <label>Timeframe</label>
+      <select id="timeframe">
+        <option value="1">Last 24 hours</option>
+        <option value="7" selected>This week (7d)</option>
+        <option value="14">Last 2 weeks</option>
+        <option value="30">Last month (30d)</option>
+        <option value="1000000">All time</option>
+      </select>
+      <label>Region (country code, e.g., US, IN, DE)</label>
+      <input id="searchRegion" value="US" />
+      <label>Query</label>
+      <input id="query" placeholder="e.g., ai podcast" />
+      <label>Max results (<=50)</label>
+      <input id="qmax" type="number" value="25" min="1" max="50" />
+      <button id="searchBtn">Search</button>
+    </div>
     <section class="card">
       <h3>Niche Outliers (by category + timeframe)</h3>
       <table id="catTable">
@@ -133,11 +135,12 @@
     async function doSearch() {
       const q = document.getElementById('query').value;
       const max = document.getElementById('qmax').value || 25;
+      const region = document.getElementById('searchRegion').value || 'US';
       const err = document.getElementById('error');
       err.textContent = '';
       if (!q.trim()) { err.textContent = 'Enter a query'; return; }
       try {
-        const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}`);
+        const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}&region=${region}`);
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         renderSearchCards(data.videos);
@@ -152,6 +155,7 @@
         const card = document.createElement('div');
         card.className = 'video-card';
         const thumb = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
+        const days = v.ageHours / 24;
         card.innerHTML = `
           <div class="thumb" style="background-image:url('${thumb}')">
             <div class="pill pill-red">${v.vph.toFixed(0)} VPH</div>
@@ -160,7 +164,7 @@
           <div class="card-body">
             <a class="title" href="${v.url}" target="_blank">${v.title}</a>
             <div class="meta">${v.channelTitle}</div>
-            <div class="meta">${v.ageHours.toFixed(1)}h ago</div>
+            <div class="meta">${days < 1 ? v.ageHours.toFixed(1) + 'h ago' : days.toFixed(1) + 'd ago'} • ${new Date(v.publishedAt).toLocaleDateString()}</div>
             <div class="actions">
               <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
               <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
