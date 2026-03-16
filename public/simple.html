@@ -7,33 +7,73 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="page">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">YouTube Growth System</p>
-        <h1>Tube Money Outliers</h1>
-        <p class="tagline">Live YouTube data, ranked by velocity and small-channel boost.</p>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo">Tube Money AI</div>
+      <nav class="nav">
+        <div class="nav-label">Discover</div>
+        <a class="nav-item active">Outlier Engine</a>
+        <a class="nav-item">Trending Keywords</a>
+        <a class="nav-item">Niche Finder</a>
+        <div class="nav-label">Create</div>
+        <a class="nav-item">Title Generator</a>
+        <a class="nav-item">Script Writer</a>
+        <a class="nav-item">Voiceover Studio</a>
+        <div class="nav-label">Visual</div>
+        <a class="nav-item">Thumbnail Maker</a>
+        <a class="nav-item">Scene Builder</a>
+      </nav>
+      <div class="sidebar-card">
+        <p class="muted">Status</p>
+        <div class="status-chip">AI Ready | live</div>
       </div>
-      <div class="hero-actions">
-        <button class="pill-btn" id="go">Refresh Outliers</button>
-        <span class="dot-badge">LIVE</span>
-      </div>
-    </header>
+    </aside>
 
-    <div class="controls-row card">
-      <div class="control">
-        <label>Region (country code)</label>
-        <input id="region" value="US" />
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">YouTube Growth System</p>
+          <h1>Tube Money Outliers</h1>
+          <p class="tagline">Live YouTube data, ranked by velocity and small-channel boost.</p>
+        </div>
+        <div class="hero-actions">
+          <button class="pill-btn" id="go">Refresh Outliers</button>
+          <span class="dot-badge">LIVE</span>
+        </div>
+      </header>
+
+      <section class="stat-grid">
+        <div class="stat-card">
+          <p class="muted">Videos scanned</p>
+          <div class="stat-value" id="stat-videos">--</div>
+          <div class="stat-sub">latest fetch</div>
+        </div>
+        <div class="stat-card">
+          <p class="muted">Channels surfaced</p>
+          <div class="stat-value" id="stat-channels">--</div>
+          <div class="stat-sub">unique creators</div>
+        </div>
+        <div class="stat-card">
+          <p class="muted">Region</p>
+          <div class="stat-value" id="stat-region">US</div>
+          <div class="stat-sub">country filter</div>
+        </div>
+      </section>
+
+      <div class="controls-row card">
+        <div class="control">
+          <label>Region (country code)</label>
+          <input id="region" value="US" />
+        </div>
+        <div class="control">
+          <label>Max results</label>
+          <input id="max" type="number" value="25" min="1" max="50" />
+        </div>
+        <div class="control">
+          <label>Status</label>
+          <div class="status-chip">API ready</div>
+        </div>
       </div>
-      <div class="control">
-        <label>Max results</label>
-        <input id="max" type="number" value="25" min="1" max="50" />
-      </div>
-      <div class="control">
-        <label>Status</label>
-        <div class="status-chip">API ready</div>
-      </div>
-    </div>
 
     <section class="card">
       <div class="section-head">
@@ -120,7 +160,8 @@
       </table>
     </section>
     <pre id="error"></pre>
-  </main>
+    </main>
+  </div>
   <script>
     const categories = [
       { id: "0", name: "All categories" },
@@ -178,10 +219,14 @@
       const cbody = document.querySelector('#chanTable tbody');
         cbody.innerHTML = '';
         data.channels.slice(0, 15).forEach(c => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${c.channelTitle}</td><td>${c.videos}</td><td>${c.score.toFixed(0)}</td>`;
-          cbody.appendChild(tr);
-        });
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.channelTitle}</td><td>${c.videos}</td><td>${c.score.toFixed(0)}</td>`;
+        cbody.appendChild(tr);
+      });
+      const regionVal = document.getElementById('region').value || 'US';
+      document.getElementById('stat-videos').textContent = data.videos.length;
+      document.getElementById('stat-channels').textContent = data.channels.length;
+      document.getElementById('stat-region').textContent = regionVal.toUpperCase();
       }
     async function doSearch() {
       const q = document.getElementById('query').value;

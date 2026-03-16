@@ -15,6 +15,47 @@ body {
   background: radial-gradient(circle at 10% 20%, rgba(35,245,159,0.08), transparent 20%), radial-gradient(circle at 80% 0%, rgba(24,196,255,0.08), transparent 25%), #021511;
   color: var(--text);
 }
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 240px;
+  padding: 24px 16px;
+  background: linear-gradient(180deg, #031b14, #02120e);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.logo { font-weight: 800; font-size: 18px; margin-bottom: 18px; color: var(--accent); letter-spacing: 0.04em; }
+.nav-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; margin: 14px 0 6px; }
+.nav-item {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  color: var(--text);
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: default;
+}
+.nav-item.active {
+  background: rgba(35,245,159,0.14);
+  border-color: var(--border);
+  color: var(--accent);
+}
+.sidebar-card {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+}
+.page {
+  flex: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 20px 72px;
+}
 .page {
   max-width: 1280px;
   margin: 0 auto;
@@ -96,6 +137,21 @@ button {
 }
 button:hover { transform: translateY(-1px) scale(1.01); box-shadow: 0 14px 34px rgba(0,0,0,0.45); }
 .actions-row { display: flex; justify-content: flex-end; margin-top: 6px; }
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+.stat-card {
+  padding: 14px;
+  background: linear-gradient(145deg, rgba(35,245,159,0.12), rgba(24,196,255,0.08));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+}
+.stat-value { font-size: 26px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+.stat-sub { color: var(--muted); font-size: 12px; }
 .mini {
   margin: 2px 4px 0 0;
   padding: 6px 9px;
