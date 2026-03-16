@@ -55,12 +55,7 @@
     </section>
     <section class="card">
       <h3>Search Results (ranked by views/hour)</h3>
-      <table id="searchTable">
-        <thead>
-          <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Actions</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div id="searchGrid" class="card-grid"></div>
     </section>
     <section class="card">
       <h3>Niche Outliers (by category + timeframe)</h3>
@@ -145,23 +140,35 @@
         const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}`);
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        const body = document.querySelector('#searchTable tbody');
-        body.innerHTML = '';
-        data.videos.slice(0, 25).forEach(v => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td><a href="${v.url}" target="_blank">${v.title}</a></td>
-                          <td>${v.channelTitle}</td>
-                          <td>${v.views.toLocaleString()}</td>
-                          <td>${v.vph.toFixed(0)}</td>
-                          <td>
-                            <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
-                            <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
-                          </td>`;
-          body.appendChild(tr);
-        });
+        renderSearchCards(data.videos);
       } catch (e) {
         err.textContent = e.message;
       }
+    }
+    function renderSearchCards(videos) {
+      const grid = document.getElementById('searchGrid');
+      grid.innerHTML = '';
+      videos.slice(0, 25).forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        const thumb = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
+        card.innerHTML = `
+          <div class="thumb" style="background-image:url('${thumb}')">
+            <div class="pill pill-red">${v.vph.toFixed(0)} VPH</div>
+            <div class="pill pill-purple">${(v.views/1000).toFixed(1)}k views</div>
+          </div>
+          <div class="card-body">
+            <a class="title" href="${v.url}" target="_blank">${v.title}</a>
+            <div class="meta">${v.channelTitle}</div>
+            <div class="meta">${v.ageHours.toFixed(1)}h ago</div>
+            <div class="actions">
+              <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
+              <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
     }
     async function fetchCategory() {
       const categoryId = document.getElementById('category').value;

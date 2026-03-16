@@ -81,3 +81,54 @@ th, td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.12); fon
 th { color: var(--muted); font-weight: 700; background: rgba(255,255,255,0.03); }
 td a { color: var(--accent2); text-decoration: none; font-weight: 700; }
 td a:hover { text-decoration: underline; }
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.video-card {
+  background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(0,0,0,0.35));
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 14px 30px rgba(0,0,0,0.4);
+}
+.video-card .thumb {
+  position: relative;
+  padding-top: 56%;
+  background-size: cover;
+  background-position: center;
+}
+.pill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #0a0d22;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+.pill + .pill { left: auto; right: 8px; }
+.pill-red { background: #ff6b6b; }
+.pill-purple { background: #c084fc; color: #0a0d22; }
+.card-body {
+  padding: 12px 12px 14px;
+}
+.title {
+  display: block;
+  font-weight: 800;
+  color: var(--text);
+  text-decoration: none;
+  margin-bottom: 6px;
+}
+.title:hover { color: var(--accent2); }
+.meta {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 3px;
+}
+.actions {
+  margin-top: 8px;
+}
