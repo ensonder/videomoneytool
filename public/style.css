@@ -66,3 +66,8 @@ ol { padding-left: 18px; color: var(--muted); }
 code { background: rgba(255,255,255,0.08); padding: 2px 5px; border-radius: 6px; }
 ul { color: var(--muted); padding-left: 18px; }
 li { margin-bottom: 6px; }
+table { width: 100%; border-collapse: collapse; color: var(--text); }
+th, td { padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; text-align: left; }
+th { color: var(--muted); font-weight: 600; }
+td a { color: var(--accent); text-decoration: none; }
+td a:hover { text-decoration: underline; }

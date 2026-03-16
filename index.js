@@ -5,6 +5,7 @@
 // Start: node index.js
 
 require("dotenv").config();
+const path = require("path");
 const express = require("express");
 const { OpenAI } = require("openai");
 const cosine = require("cosine-similarity");
@@ -86,6 +87,66 @@ async function fetchRecentVideos(channelId, days = 7, max = 25) {
       publishedAt
     };
   });
+}
+
+// Simpler trending/outlier fetch using mostPopular feed
+async function fetchTrendingOutliers(regionCode = "US", maxResults = 25) {
+  if (!process.env.YT_API_KEY) throw new Error("YT_API_KEY not set");
+  const popular = await ytFetch("videos", {
+    chart: "mostPopular",
+    part: "id,snippet,statistics",
+    maxResults,
+    regionCode
+  });
+  const vids = popular.items || [];
+  const channelIds = [...new Set(vids.map(v => v.snippet.channelId))];
+  const channelsResp = channelIds.length
+    ? await ytFetch("channels", { part: "snippet,statistics", id: channelIds.join(",") })
+    : { items: [] };
+  const channelMap = new Map(
+    (channelsResp.items || []).map(c => [
+      c.id,
+      {
+        title: c.snippet.title,
+        subs: Number(c.statistics.subscriberCount || 0),
+        videoCount: Number(c.statistics.videoCount || 0)
+      }
+    ])
+  );
+  const now = Date.now();
+  const videoScores = vids.map(v => {
+    const views = Number(v.statistics.viewCount || 0);
+    const publishedAt = v.snippet.publishedAt;
+    const ageHours = Math.max((now - new Date(publishedAt).getTime()) / 3.6e6, 0.01);
+    const vph = views / ageHours;
+    const ch = channelMap.get(v.snippet.channelId) || { subs: 0, title: v.snippet.channelTitle };
+    const smallBoost = clamp((100000 - ch.subs) / 100000, 0, 1) * 0.4;
+    const score = vph * (1 + smallBoost);
+    return {
+      id: v.id,
+      title: v.snippet.title,
+      channelTitle: ch.title,
+      channelId: v.snippet.channelId,
+      views,
+      vph,
+      ageHours,
+      publishedAt,
+      score,
+      url: `https://www.youtube.com/watch?v=${v.id}`
+    };
+  });
+  const topVideos = videoScores.sort((a, b) => b.score - a.score);
+
+  const channelAgg = new Map();
+  topVideos.forEach(v => {
+    const entry = channelAgg.get(v.channelId) || { channelId: v.channelId, channelTitle: v.channelTitle, score: 0, videos: 0 };
+    entry.score += v.score;
+    entry.videos += 1;
+    channelAgg.set(v.channelId, entry);
+  });
+  const topChannels = Array.from(channelAgg.values()).sort((a, b) => b.score - a.score);
+
+  return { videos: topVideos, channels: topChannels };
 }
 async function fetchTranscript(ytId, lang = "en") {
   try {
@@ -380,6 +441,22 @@ app.get("/v1/transcript/:ytId", async (req, res) => {
   const lang = req.query.lang || "en";
   const transcript = await fetchTranscript(ytId, lang);
   res.json({ ytId, transcript });
+});
+
+// ---- Simple trending/outlier API + minimal UI ----
+app.get("/api/simple/outliers", async (req, res) => {
+  const region = req.query.region || "US";
+  const maxResults = Number(req.query.max || 25);
+  try {
+    const data = await fetchTrendingOutliers(region, maxResults);
+    res.json(data);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get("/simple", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "simple.html"));
 });
 
 // ---- Server ----

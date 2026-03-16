@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple YouTube Outliers</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <h1>Simple YouTube Outlier Finder</h1>
+    <p class="tagline">Uses YouTube Data API "mostPopular" feed, ranks by views/hour with a small-channel boost.</p>
+    <div class="card">
+      <label>Region code (e.g., US, GB, IN, DE)</label>
+      <input id="region" value="US" />
+      <label>Max results (<=50)</label>
+      <input id="max" type="number" value="25" min="1" max="50" />
+      <button id="go">Fetch</button>
+    </div>
+    <section class="card">
+      <h3>Top Videos</h3>
+      <table id="vidTable">
+        <thead>
+          <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Score</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <section class="card">
+      <h3>Top Channels (by aggregate score)</h3>
+      <table id="chanTable">
+        <thead>
+          <tr><th>Channel</th><th>Videos</th><th>Score</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <pre id="error"></pre>
+  </main>
+  <script>
+    async function fetchOutliers() {
+      const region = document.getElementById('region').value || 'US';
+      const max = document.getElementById('max').value || 25;
+      const err = document.getElementById('error');
+      err.textContent = '';
+      try {
+        const res = await fetch(`/api/simple/outliers?region=${encodeURIComponent(region)}&max=${max}`);
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        render(data);
+      } catch (e) {
+        err.textContent = e.message;
+      }
+    }
+    function render(data) {
+      const body = document.querySelector('#vidTable tbody');
+      body.innerHTML = '';
+      data.videos.slice(0, 25).forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><a href="${v.url}" target="_blank">${v.title}</a></td>
+                        <td>${v.channelTitle}</td>
+                        <td>${v.views.toLocaleString()}</td>
+                        <td>${v.vph.toFixed(0)}</td>
+                        <td>${v.score.toFixed(0)}</td>`;
+        body.appendChild(tr);
+      });
+      const cbody = document.querySelector('#chanTable tbody');
+      cbody.innerHTML = '';
+      data.channels.slice(0, 15).forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.channelTitle}</td><td>${c.videos}</td><td>${c.score.toFixed(0)}</td>`;
+        cbody.appendChild(tr);
+      });
+    }
+    document.getElementById('go').onclick = fetchOutliers;
+    fetchOutliers();
+  </script>
+</body>
+</html>
