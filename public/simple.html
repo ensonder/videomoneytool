@@ -7,173 +7,36 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="logo">$$$ Tube Money AI</div>
-      <nav class="nav">
-        <div class="nav-label">Discover</div>
-        <a class="nav-item active">Outlier Engine</a>
-        <a class="nav-item">Trending Keywords</a>
-        <a class="nav-item">Niche Finder</a>
-        <div class="nav-label">Create</div>
-        <a class="nav-item">Title Generator</a>
-        <a class="nav-item">Script Writer</a>
-        <a class="nav-item">Voiceover Studio</a>
-        <div class="nav-label">Visual</div>
-        <a class="nav-item">Thumbnail Maker</a>
-        <a class="nav-item">Scene Builder</a>
-      </nav>
-      <div class="sidebar-card">
-        <p class="muted">Status</p>
-        <div class="status-chip">AI Ready | live</div>
-      </div>
-    </aside>
-
-    <main class="page">
-      <header class="hero">
-        <div>
-          <p class="eyebrow">YouTube Growth System</p>
-          <h1>$$$ Tube Money Outliers <span class="moon">🌙</span></h1>
-          <p class="tagline">Live YouTube data, ranked by velocity and small-channel boost.</p>
-        </div>
-        <div class="hero-actions">
-          <button class="pill-btn" id="go">Refresh Outliers</button>
-          <span class="dot-badge">LIVE</span>
-        </div>
-      </header>
-
-      <section class="stat-grid">
-        <div class="stat-card">
-          <p class="muted">Videos scanned</p>
-          <div class="stat-value" id="stat-videos">--</div>
-          <div class="stat-sub">latest fetch</div>
-        </div>
-        <div class="stat-card">
-          <p class="muted">Channels surfaced</p>
-          <div class="stat-value" id="stat-channels">--</div>
-          <div class="stat-sub">unique creators</div>
-        </div>
-        <div class="stat-card">
-          <p class="muted">Region</p>
-          <div class="stat-value" id="stat-region">US</div>
-          <div class="stat-sub">country filter</div>
-        </div>
-      </section>
-
-      <div class="palette-row">
-        <span class="muted">Palettes</span>
-        <div class="palette-buttons">
-          <button class="palette-btn" data-theme="theme-emerald">Emerald</button>
-          <button class="palette-btn" data-theme="theme-royal">Royal</button>
-          <button class="palette-btn" data-theme="theme-sunset">Sunset</button>
-          <button class="palette-btn" data-theme="theme-ocean">Ocean</button>
-          <button class="palette-btn" data-theme="theme-neon">Neon</button>
-        </div>
-      </div>
-
-      <section class="card">
-        <div class="section-head">
-          <h3>Outlier Feed</h3>
-          <div class="hint">auto-loads channels with 10-100x views vs subs</div>
-        </div>
-        <div class="controls-row">
-          <div class="control">
-            <label>Minimum outlier score</label>
-            <input id="outlierMin" type="range" min="1" max="100" value="10" oninput="document.getElementById('outlierMinVal').textContent=this.value; renderOutlierFeed(true);">
-            <div class="muted">Score: <span id="outlierMinVal">10</span></div>
-          </div>
-        </div>
-        <div id="outlierFeed" class="card-grid"></div>
-        <div id="feedSentinel"></div>
-      </section>
-
-      <div class="controls-row card">
-        <div class="control">
-          <label>Region (country code)</label>
-          <input id="region" value="US" />
-        </div>
-        <div class="control">
-          <label>Max results</label>
-          <input id="max" type="number" value="25" min="1" max="50" />
-        </div>
-        <div class="control">
-          <label>Status</label>
-          <div class="status-chip">API ready</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-head">
-          <h3>Search by keyword</h3>
-          <div class="hint">pulls search results, ranks by views/hour</div>
-        </div>
-        <div class="controls-grid">
-          <div class="control">
-            <label>Niche / Category (type or pick)</label>
-            <input id="category" list="categoryList" placeholder="All categories" />
-            <datalist id="categoryList"></datalist>
-          </div>
-          <div class="control">
-            <label>Timeframe</label>
-            <select id="timeframe">
-              <option value="1">Last 24 hours</option>
-              <option value="7" selected>This week (7d)</option>
-              <option value="14">Last 2 weeks</option>
-              <option value="30">Last month (30d)</option>
-              <option value="1000000">All time</option>
-            </select>
-          </div>
-          <div class="control">
-            <label>Region</label>
-            <input id="searchRegion" value="US" />
-          </div>
-          <div class="control">
-            <label>Query</label>
-            <input id="query" placeholder="e.g., ai podcast" />
-          </div>
-          <div class="control">
-            <label>Max results</label>
-            <input id="qmax" type="number" value="25" min="1" max="50" />
-          </div>
-          <div class="control">
-            <label>Sort by</label>
-            <select id="sortSelect">
-              <option value="popular" selected>Most popular</option>
-              <option value="recent">Most recent</option>
-            </select>
-          </div>
-        </div>
-        <div class="actions-row">
-          <button id="searchBtn">Search</button>
-        </div>
-      </div>
-
-      <section class="card">
-        <div class="section-head">
-          <h3>Search Results (ranked by views/hour)</h3>
-          <div class="hint">cards show VPH, views, publish date, quick actions</div>
-        </div>
-        <div id="searchGrid" class="card-grid"></div>
-      </section>
-
-      <section class="card">
-        <div class="section-head">
-          <h3>Niche Outliers (by category + timeframe)</h3>
-          <div class="hint">filters above control category and window</div>
-        </div>
-        <table id="catTable">
-          <thead>
-            <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Age (h)</th><th>Actions</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-
-      <section class="card">
-        <div class="section-head">
-          <h3>Top Videos</h3>
-          <div class="hint">ranked by views/hour + small-channel boost</div>
-        </div>
+  <main class="page">
+    <h1>Simple YouTube Outlier Finder</h1>
+    <p class="tagline">Uses YouTube Data API "mostPopular" feed, ranks by views/hour with a small-channel boost.</p>
+    <div class="card">
+      <label>Region code (e.g., US, GB, IN, DE)</label>
+      <input id="region" value="US" />
+      <label>Max results (<=50)</label>
+      <input id="max" type="number" value="25" min="1" max="50" />
+      <button id="go">Fetch</button>
+    </div>
+    <div class="card">
+      <h3>Search by keyword</h3>
+      <label>Niche / Category</label>
+      <select id="category"></select>
+      <label>Timeframe</label>
+      <select id="timeframe">
+        <option value="1">Last 24 hours</option>
+        <option value="7" selected>This week (7d)</option>
+        <option value="14">Last 2 weeks</option>
+        <option value="30">Last month (30d)</option>
+        <option value="1000000">All time</option>
+      </select>
+      <label>Query</label>
+      <input id="query" placeholder="e.g., ai podcast" />
+      <label>Max results (<=50)</label>
+      <input id="qmax" type="number" value="25" min="1" max="50" />
+      <button id="searchBtn">Search</button>
+    </div>
+    <section class="card">
+      <h3>Top Videos</h3>
       <table id="vidTable">
         <thead>
           <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Score</th></tr>
@@ -181,12 +44,8 @@
         <tbody></tbody>
       </table>
     </section>
-
     <section class="card">
-      <div class="section-head">
-        <h3>Top Channels</h3>
-        <div class="hint">aggregate score across their trending uploads</div>
-      </div>
+      <h3>Top Channels (by aggregate score)</h3>
       <table id="chanTable">
         <thead>
           <tr><th>Channel</th><th>Videos</th><th>Score</th></tr>
@@ -194,13 +53,27 @@
         <tbody></tbody>
       </table>
     </section>
+    <section class="card">
+      <h3>Search Results (ranked by views/hour)</h3>
+      <table id="searchTable">
+        <thead>
+          <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Actions</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <section class="card">
+      <h3>Niche Outliers (by category + timeframe)</h3>
+      <table id="catTable">
+        <thead>
+          <tr><th>Title</th><th>Channel</th><th>Views</th><th>V/Hr</th><th>Age (h)</th><th>Actions</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
     <pre id="error"></pre>
-    </main>
-  </div>
+  </main>
   <script>
-    let outlierFeed = [];
-    let feedCursor = 0;
-    let feedObserver;
     const categories = [
       { id: "0", name: "All categories" },
       { id: "1", name: "Film & Animation" },
@@ -219,14 +92,13 @@
     ];
 
     function populateCategories() {
-      const list = document.getElementById('categoryList');
+      const sel = document.getElementById('category');
       categories.forEach(c => {
         const opt = document.createElement('option');
-        opt.value = c.name;
-        opt.dataset.id = c.id;
-        list.appendChild(opt);
+        opt.value = c.id;
+        opt.textContent = c.name;
+        sel.appendChild(opt);
       });
-      document.getElementById('category').value = "All categories";
     }
 
     async function fetchOutliers() {
@@ -258,86 +130,52 @@
       const cbody = document.querySelector('#chanTable tbody');
         cbody.innerHTML = '';
         data.channels.slice(0, 15).forEach(c => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${c.channelTitle}</td><td>${c.videos}</td><td>${c.score.toFixed(0)}</td>`;
-        cbody.appendChild(tr);
-      });
-      const regionVal = document.getElementById('region').value || 'US';
-      document.getElementById('stat-videos').textContent = data.videos.length;
-      document.getElementById('stat-channels').textContent = data.channels.length;
-      document.getElementById('stat-region').textContent = regionVal.toUpperCase();
-      outlierFeed = data.videos;
-      renderOutlierFeed(true);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${c.channelTitle}</td><td>${c.videos}</td><td>${c.score.toFixed(0)}</td>`;
+          cbody.appendChild(tr);
+        });
       }
     async function doSearch() {
       const q = document.getElementById('query').value;
       const max = document.getElementById('qmax').value || 25;
-      const region = document.getElementById('searchRegion').value || 'US';
-      const sort = document.getElementById('sortSelect').value || 'popular';
-      const days = Number(document.getElementById('timeframe').value || 1000000);
       const err = document.getElementById('error');
       err.textContent = '';
       if (!q.trim()) { err.textContent = 'Enter a query'; return; }
       try {
-        const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}&region=${region}&sort=${sort}&days=${days}`);
+        const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}`);
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        const filtered = days >= 100000 ? data.videos : data.videos.filter(v => v.ageHours <= days * 24);
-        renderSearchCards(filtered);
+        const body = document.querySelector('#searchTable tbody');
+        body.innerHTML = '';
+        data.videos.slice(0, 25).forEach(v => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td><a href="${v.url}" target="_blank">${v.title}</a></td>
+                          <td>${v.channelTitle}</td>
+                          <td>${v.views.toLocaleString()}</td>
+                          <td>${v.vph.toFixed(0)}</td>
+                          <td>
+                            <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
+                            <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
+                          </td>`;
+          body.appendChild(tr);
+        });
       } catch (e) {
         err.textContent = e.message;
       }
     }
-    function renderSearchCards(videos) {
-      const grid = document.getElementById('searchGrid');
-      grid.innerHTML = '';
-      videos.slice(0, 25).forEach(v => {
-        const card = document.createElement('div');
-        card.className = 'video-card';
-        const thumb = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
-        const days = v.ageHours / 24;
-        card.innerHTML = `
-          <div class="thumb" style="background-image:url('${thumb}')">
-            <div class="pill pill-red">${v.vph.toFixed(0)} VPH</div>
-            <div class="pill pill-purple">${(v.views/1000).toFixed(1)}k views</div>
-          </div>
-          <div class="card-body">
-            <a class="title" href="${v.url}" target="_blank">${v.title}</a>
-            <div class="meta">${v.channelTitle}</div>
-            <div class="meta">${days < 1 ? v.ageHours.toFixed(1) + 'h ago' : days.toFixed(1) + 'd ago'} | ${new Date(v.publishedAt).toLocaleDateString()}</div>
-            <div class="actions">
-              <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
-              <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
     async function fetchCategory() {
-      const catText = document.getElementById('category').value.trim();
-      const match = categories.find(c => c.name.toLowerCase() === catText.toLowerCase());
-      const categoryId = match ? match.id : null;
+      const categoryId = document.getElementById('category').value;
       const days = document.getElementById('timeframe').value;
       const region = document.getElementById('region').value || 'US';
       const err = document.getElementById('error');
       err.textContent = '';
       try {
-        let videos = [];
-        if (categoryId) {
-          const res = await fetch(`/api/simple/category?categoryId=${categoryId}&days=${days}&region=${region}&max=50`);
-          if (!res.ok) throw new Error(await res.text());
-          const data = await res.json();
-          videos = data.videos;
-        } else if (catText) {
-          const res = await fetch(`/api/simple/search?q=${encodeURIComponent(catText)}&max=50&region=${region}&sort=popular`);
-          if (!res.ok) throw new Error(await res.text());
-          const data = await res.json();
-          videos = data.videos.filter(v => v.ageHours <= days * 24);
-        }
+        const res = await fetch(`/api/simple/category?categoryId=${categoryId}&days=${days}&region=${region}&max=50`);
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
         const body = document.querySelector('#catTable tbody');
         body.innerHTML = '';
-        videos.slice(0, 50).forEach(v => {
+        data.videos.slice(0, 50).forEach(v => {
           const tr = document.createElement('tr');
           tr.innerHTML = `<td><a href="${v.url}" target="_blank">${v.title}</a></td>
                           <td>${v.channelTitle}</td>
@@ -353,48 +191,6 @@
       } catch (e) {
         err.textContent = e.message;
       }
-    }
-
-    function renderOutlierFeed(reset = false) {
-      const grid = document.getElementById('outlierFeed');
-      if (!grid) return;
-      const threshold = Number(document.getElementById('outlierMin').value || 10);
-      if (reset) { grid.innerHTML = ""; feedCursor = 0; }
-      let added = 0;
-      while (feedCursor < outlierFeed.length && added < 12) {
-        const v = outlierFeed[feedCursor++];
-        const ratio = v.subs > 0 ? v.views / v.subs : 0;
-        if (ratio < 10 || ratio > 100 || v.score < threshold) continue;
-        const card = document.createElement('div');
-        card.className = 'video-card';
-        const thumb = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
-        card.innerHTML = `
-          <div class="thumb" style="background-image:url('${thumb}')">
-            <div class="pill pill-red">${v.score.toFixed(0)} score</div>
-            <div class="pill pill-purple">${ratio.toFixed(1)}x views/subs</div>
-          </div>
-          <div class="card-body">
-            <a class="title" href="${v.url}" target="_blank">${v.title}</a>
-            <div class="meta">${v.channelTitle}</div>
-            <div class="meta">${v.views.toLocaleString()} views</div>
-            <div class="actions">
-              <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
-              <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-        added++;
-      }
-    }
-
-    function setupFeedObserver() {
-      const sentinel = document.getElementById('feedSentinel');
-      if (!sentinel) return;
-      feedObserver = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) renderOutlierFeed(false); });
-      }, { rootMargin: "200px" });
-      feedObserver.observe(sentinel);
     }
 
     async function downloadTranscript(id, titleEnc) {
@@ -425,16 +221,9 @@
     document.getElementById('searchBtn').onclick = doSearch;
     document.getElementById('category').onchange = fetchCategory;
     document.getElementById('timeframe').onchange = fetchCategory;
-    document.querySelectorAll('.palette-btn').forEach(btn => {
-      btn.onclick = () => {
-        document.documentElement.classList.remove('theme-emerald', 'theme-royal', 'theme-sunset', 'theme-ocean', 'theme-neon');
-        document.documentElement.classList.add(btn.dataset.theme);
-      };
-    });
     populateCategories();
     fetchOutliers();
     fetchCategory();
-    setupFeedObserver();
   </script>
 </body>
 </html>

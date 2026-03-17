@@ -131,7 +131,6 @@ async function fetchTrendingOutliers(regionCode = "US", maxResults = 25) {
       vph,
       ageHours,
       publishedAt,
-      subs: ch.subs || 0,
       score,
       url: `https://www.youtube.com/watch?v=${v.id}`
     };
@@ -151,22 +150,14 @@ async function fetchTrendingOutliers(regionCode = "US", maxResults = 25) {
 }
 
 // Search videos by query, rank by views/hour
-async function searchVideos(query, maxResults = 25, regionCode = "US", order = "viewCount", days = 1000000) {
+async function searchVideos(query, maxResults = 25) {
   if (!process.env.YT_API_KEY) throw new Error("YT_API_KEY not set");
-  const params = {
+  const search = await ytFetch("search", {
     part: "id,snippet",
     q: query,
     type: "video",
     maxResults: Math.min(maxResults, 50),
-    order,
-    regionCode
-  };
-  if (days < 100000) {
-    const pubAfter = new Date(Date.now() - days * 86400 * 1000).toISOString();
-    params.publishedAfter = pubAfter;
-  }
-  const search = await ytFetch("search", {
-    ...params
+    order: "date"
   });
   const ids = (search.items || []).map(i => i.id.videoId).filter(Boolean);
   if (!ids.length) return [];
@@ -180,7 +171,6 @@ async function searchVideos(query, maxResults = 25, regionCode = "US", order = "
     const publishedAt = v.snippet.publishedAt;
     const ageHours = Math.max((now - new Date(publishedAt).getTime()) / 3.6e6, 0.01);
     const vph = views / ageHours;
-    const subs = Number(v.statistics?.subscriberCount || 0); // may be empty; keep for ratio checks client-side
     return {
       id: v.id,
       title: v.snippet.title,
@@ -190,7 +180,6 @@ async function searchVideos(query, maxResults = 25, regionCode = "US", order = "
       vph,
       ageHours,
       publishedAt,
-      subs,
       url: `https://www.youtube.com/watch?v=${v.id}`
     };
   }).sort((a, b) => b.vph - a.vph);
@@ -237,23 +226,7 @@ async function fetchTranscript(ytId, lang = "en") {
     const transcript = await YoutubeTranscript.fetchTranscript(ytId, { lang, country: "US" });
     return transcript.map(t => t.text).join(" ");
   } catch (e) {
-    try {
-      const alt = await fetch(`https://youtubetranscript.com/?server_vid=${ytId}`);
-      if (alt.ok) {
-        const txt = await alt.text();
-        try {
-          const json = JSON.parse(txt);
-          if (Array.isArray(json)) {
-            return json.map(item => item.text).join(" ");
-          }
-        } catch {
-          // fall through if not JSON
-        }
-      }
-      return "";
-    } catch {
-      return "";
-    }
+    return "";
   }
 }
 
@@ -557,13 +530,10 @@ app.get("/api/simple/outliers", async (req, res) => {
 app.get("/api/simple/search", async (req, res) => {
   const q = req.query.q || "";
   const maxResults = Number(req.query.max || 25);
-  const region = req.query.region || "US";
-  const order = req.query.sort === "recent" ? "date" : "viewCount";
-  const days = Number(req.query.days || 1000000);
   if (!q.trim()) return res.status(400).json({ error: "q is required" });
   try {
-    const data = await searchVideos(q, maxResults, region, order, days);
-    res.json({ query: q, region, videos: data });
+    const data = await searchVideos(q, maxResults);
+    res.json({ query: q, videos: data });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
