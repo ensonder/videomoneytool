@@ -7,7 +7,7 @@
   --muted: #9ae5c7;
   --border: rgba(35, 245, 159, 0.16);
   --mono: "SFMono-Regular", Consolas, monospace;
-  font-family: "Space Grotesk", "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Satoshi", "General Sans", "Space Grotesk", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .theme-royal {
   --bg: #0a0d25;
@@ -26,6 +26,24 @@
   --accent2: #ffc857;
   --muted: #ffd9b3;
   --border: rgba(255, 138, 92, 0.24);
+}
+.theme-ocean {
+  --bg: #04121f;
+  --card: #072030;
+  --text: #e8f6ff;
+  --accent: #3ad0ff;
+  --accent2: #5cf7d6;
+  --muted: #a6d9f5;
+  --border: rgba(58, 208, 255, 0.2);
+}
+.theme-neon {
+  --bg: #0b0618;
+  --card: #120a26;
+  --text: #f7edff;
+  --accent: #c77dff;
+  --accent2: #7afcff;
+  --muted: #d8c8ff;
+  --border: rgba(199, 125, 255, 0.22);
 }
 * { box-sizing: border-box; }
 body {
@@ -85,6 +103,7 @@ h2, h3 { margin: 0 0 12px; }
 .tagline { color: var(--muted); margin: 0; }
 .hero { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
 .hero-actions { display: flex; align-items: center; gap: 10px; }
+.moon { font-size: 20px; margin-left: 6px; vertical-align: middle; }
 .palette-row { display: flex; align-items: center; gap: 12px; margin: 10px 0 4px; }
 .palette-buttons { display: flex; gap: 8px; }
 .palette-btn {
