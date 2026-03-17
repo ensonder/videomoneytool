@@ -151,15 +151,22 @@ async function fetchTrendingOutliers(regionCode = "US", maxResults = 25) {
 }
 
 // Search videos by query, rank by views/hour
-async function searchVideos(query, maxResults = 25, regionCode = "US", order = "viewCount") {
+async function searchVideos(query, maxResults = 25, regionCode = "US", order = "viewCount", days = 1000000) {
   if (!process.env.YT_API_KEY) throw new Error("YT_API_KEY not set");
-  const search = await ytFetch("search", {
+  const params = {
     part: "id,snippet",
     q: query,
     type: "video",
     maxResults: Math.min(maxResults, 50),
     order,
     regionCode
+  };
+  if (days < 100000) {
+    const pubAfter = new Date(Date.now() - days * 86400 * 1000).toISOString();
+    params.publishedAfter = pubAfter;
+  }
+  const search = await ytFetch("search", {
+    ...params
   });
   const ids = (search.items || []).map(i => i.id.videoId).filter(Boolean);
   if (!ids.length) return [];
@@ -552,9 +559,10 @@ app.get("/api/simple/search", async (req, res) => {
   const maxResults = Number(req.query.max || 25);
   const region = req.query.region || "US";
   const order = req.query.sort === "recent" ? "date" : "viewCount";
+  const days = Number(req.query.days || 1000000);
   if (!q.trim()) return res.status(400).json({ error: "q is required" });
   try {
-    const data = await searchVideos(q, maxResults, region, order);
+    const data = await searchVideos(q, maxResults, region, order, days);
     res.json({ query: q, region, videos: data });
   } catch (e) {
     res.status(400).json({ error: e.message });

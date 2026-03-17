@@ -279,7 +279,7 @@
       err.textContent = '';
       if (!q.trim()) { err.textContent = 'Enter a query'; return; }
       try {
-        const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}&region=${region}&sort=${sort}`);
+        const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}&region=${region}&sort=${sort}&days=${days}`);
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         const filtered = days >= 100000 ? data.videos : data.videos.filter(v => v.ageHours <= days * 24);
