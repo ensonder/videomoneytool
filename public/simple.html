@@ -71,6 +71,22 @@
         </div>
       </div>
 
+      <section class="card">
+        <div class="section-head">
+          <h3>Outlier Feed</h3>
+          <div class="hint">auto-loads channels with 10-100x views vs subs</div>
+        </div>
+        <div class="controls-row">
+          <div class="control">
+            <label>Minimum outlier score</label>
+            <input id="outlierMin" type="range" min="1" max="100" value="10" oninput="document.getElementById('outlierMinVal').textContent=this.value; renderOutlierFeed(true);">
+            <div class="muted">Score: <span id="outlierMinVal">10</span></div>
+          </div>
+        </div>
+        <div id="outlierFeed" class="card-grid"></div>
+        <div id="feedSentinel"></div>
+      </section>
+
       <div class="controls-row card">
         <div class="control">
           <label>Region (country code)</label>
@@ -182,6 +198,9 @@
     </main>
   </div>
   <script>
+    let outlierFeed = [];
+    let feedCursor = 0;
+    let feedObserver;
     const categories = [
       { id: "0", name: "All categories" },
       { id: "1", name: "Film & Animation" },
@@ -247,12 +266,15 @@
       document.getElementById('stat-videos').textContent = data.videos.length;
       document.getElementById('stat-channels').textContent = data.channels.length;
       document.getElementById('stat-region').textContent = regionVal.toUpperCase();
+      outlierFeed = data.videos;
+      renderOutlierFeed(true);
       }
     async function doSearch() {
       const q = document.getElementById('query').value;
       const max = document.getElementById('qmax').value || 25;
       const region = document.getElementById('searchRegion').value || 'US';
       const sort = document.getElementById('sortSelect').value || 'popular';
+      const days = Number(document.getElementById('timeframe').value || 1000000);
       const err = document.getElementById('error');
       err.textContent = '';
       if (!q.trim()) { err.textContent = 'Enter a query'; return; }
@@ -260,7 +282,8 @@
         const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}&region=${region}&sort=${sort}`);
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        renderSearchCards(data.videos);
+        const filtered = days >= 100000 ? data.videos : data.videos.filter(v => v.ageHours <= days * 24);
+        renderSearchCards(filtered);
       } catch (e) {
         err.textContent = e.message;
       }
@@ -332,6 +355,48 @@
       }
     }
 
+    function renderOutlierFeed(reset = false) {
+      const grid = document.getElementById('outlierFeed');
+      if (!grid) return;
+      const threshold = Number(document.getElementById('outlierMin').value || 10);
+      if (reset) { grid.innerHTML = ""; feedCursor = 0; }
+      let added = 0;
+      while (feedCursor < outlierFeed.length && added < 12) {
+        const v = outlierFeed[feedCursor++];
+        const ratio = v.subs > 0 ? v.views / v.subs : 0;
+        if (ratio < 10 || ratio > 100 || v.score < threshold) continue;
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        const thumb = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
+        card.innerHTML = `
+          <div class="thumb" style="background-image:url('${thumb}')">
+            <div class="pill pill-red">${v.score.toFixed(0)} score</div>
+            <div class="pill pill-purple">${ratio.toFixed(1)}x views/subs</div>
+          </div>
+          <div class="card-body">
+            <a class="title" href="${v.url}" target="_blank">${v.title}</a>
+            <div class="meta">${v.channelTitle}</div>
+            <div class="meta">${v.views.toLocaleString()} views</div>
+            <div class="actions">
+              <button class="mini" onclick="downloadTranscript('${v.id}','${encodeURIComponent(v.title)}')">Transcript</button>
+              <button class="mini" onclick="downloadThumb('${v.id}','${encodeURIComponent(v.title)}')">Thumbnail</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+        added++;
+      }
+    }
+
+    function setupFeedObserver() {
+      const sentinel = document.getElementById('feedSentinel');
+      if (!sentinel) return;
+      feedObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) renderOutlierFeed(false); });
+      }, { rootMargin: "200px" });
+      feedObserver.observe(sentinel);
+    }
+
     async function downloadTranscript(id, titleEnc) {
       try {
         const res = await fetch(`/api/simple/transcript?id=${id}`);
@@ -362,13 +427,14 @@
     document.getElementById('timeframe').onchange = fetchCategory;
     document.querySelectorAll('.palette-btn').forEach(btn => {
       btn.onclick = () => {
-        document.documentElement.classList.remove('theme-emerald', 'theme-royal', 'theme-sunset');
+        document.documentElement.classList.remove('theme-emerald', 'theme-royal', 'theme-sunset', 'theme-ocean', 'theme-neon');
         document.documentElement.classList.add(btn.dataset.theme);
       };
     });
     populateCategories();
     fetchOutliers();
     fetchCategory();
+    setupFeedObserver();
   </script>
 </body>
 </html>

@@ -131,6 +131,7 @@ async function fetchTrendingOutliers(regionCode = "US", maxResults = 25) {
       vph,
       ageHours,
       publishedAt,
+      subs: ch.subs || 0,
       score,
       url: `https://www.youtube.com/watch?v=${v.id}`
     };
@@ -172,6 +173,7 @@ async function searchVideos(query, maxResults = 25, regionCode = "US", order = "
     const publishedAt = v.snippet.publishedAt;
     const ageHours = Math.max((now - new Date(publishedAt).getTime()) / 3.6e6, 0.01);
     const vph = views / ageHours;
+    const subs = Number(v.statistics?.subscriberCount || 0); // may be empty; keep for ratio checks client-side
     return {
       id: v.id,
       title: v.snippet.title,
@@ -181,6 +183,7 @@ async function searchVideos(query, maxResults = 25, regionCode = "US", order = "
       vph,
       ageHours,
       publishedAt,
+      subs,
       url: `https://www.youtube.com/watch?v=${v.id}`
     };
   }).sort((a, b) => b.vph - a.vph);
@@ -227,7 +230,23 @@ async function fetchTranscript(ytId, lang = "en") {
     const transcript = await YoutubeTranscript.fetchTranscript(ytId, { lang, country: "US" });
     return transcript.map(t => t.text).join(" ");
   } catch (e) {
-    return "";
+    try {
+      const alt = await fetch(`https://youtubetranscript.com/?server_vid=${ytId}`);
+      if (alt.ok) {
+        const txt = await alt.text();
+        try {
+          const json = JSON.parse(txt);
+          if (Array.isArray(json)) {
+            return json.map(item => item.text).join(" ");
+          }
+        } catch {
+          // fall through if not JSON
+        }
+      }
+      return "";
+    } catch {
+      return "";
+    }
   }
 }
 
