@@ -91,8 +91,9 @@
         </div>
         <div class="controls-grid">
           <div class="control">
-            <label>Niche / Category</label>
-            <select id="category"></select>
+            <label>Niche / Category (type or pick)</label>
+            <input id="category" list="categoryList" placeholder="All categories" />
+            <datalist id="categoryList"></datalist>
           </div>
           <div class="control">
             <label>Timeframe</label>
@@ -115,6 +116,13 @@
           <div class="control">
             <label>Max results</label>
             <input id="qmax" type="number" value="25" min="1" max="50" />
+          </div>
+          <div class="control">
+            <label>Sort by</label>
+            <select id="sortSelect">
+              <option value="popular" selected>Most popular</option>
+              <option value="recent">Most recent</option>
+            </select>
           </div>
         </div>
         <div class="actions-row">
@@ -190,13 +198,14 @@
     ];
 
     function populateCategories() {
-      const sel = document.getElementById('category');
+      const list = document.getElementById('categoryList');
       categories.forEach(c => {
         const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.name;
-        sel.appendChild(opt);
+        opt.value = c.name;
+        opt.dataset.id = c.id;
+        list.appendChild(opt);
       });
+      document.getElementById('category').value = "All categories";
     }
 
     async function fetchOutliers() {
@@ -241,11 +250,12 @@
       const q = document.getElementById('query').value;
       const max = document.getElementById('qmax').value || 25;
       const region = document.getElementById('searchRegion').value || 'US';
+      const sort = document.getElementById('sortSelect').value || 'popular';
       const err = document.getElementById('error');
       err.textContent = '';
       if (!q.trim()) { err.textContent = 'Enter a query'; return; }
       try {
-        const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}&region=${region}`);
+        const res = await fetch(`/api/simple/search?q=${encodeURIComponent(q)}&max=${max}&region=${region}&sort=${sort}`);
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         renderSearchCards(data.videos);
@@ -280,18 +290,29 @@
       });
     }
     async function fetchCategory() {
-      const categoryId = document.getElementById('category').value;
+      const catText = document.getElementById('category').value.trim();
+      const match = categories.find(c => c.name.toLowerCase() === catText.toLowerCase());
+      const categoryId = match ? match.id : null;
       const days = document.getElementById('timeframe').value;
       const region = document.getElementById('region').value || 'US';
       const err = document.getElementById('error');
       err.textContent = '';
       try {
-        const res = await fetch(`/api/simple/category?categoryId=${categoryId}&days=${days}&region=${region}&max=50`);
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
+        let videos = [];
+        if (categoryId) {
+          const res = await fetch(`/api/simple/category?categoryId=${categoryId}&days=${days}&region=${region}&max=50`);
+          if (!res.ok) throw new Error(await res.text());
+          const data = await res.json();
+          videos = data.videos;
+        } else if (catText) {
+          const res = await fetch(`/api/simple/search?q=${encodeURIComponent(catText)}&max=50&region=${region}&sort=popular`);
+          if (!res.ok) throw new Error(await res.text());
+          const data = await res.json();
+          videos = data.videos.filter(v => v.ageHours <= days * 24);
+        }
         const body = document.querySelector('#catTable tbody');
         body.innerHTML = '';
-        data.videos.slice(0, 50).forEach(v => {
+        videos.slice(0, 50).forEach(v => {
           const tr = document.createElement('tr');
           tr.innerHTML = `<td><a href="${v.url}" target="_blank">${v.title}</a></td>
                           <td>${v.channelTitle}</td>
